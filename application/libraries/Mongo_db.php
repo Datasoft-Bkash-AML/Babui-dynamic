@@ -1,5 +1,7 @@
 <?php
 // application/libraries/Mongo_db.php
+require_once __DIR__ . '/../../vendor/autoload.php';
+
 class Mongo_db {
     private $client;
     private $db;
