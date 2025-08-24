@@ -1,52 +1,119 @@
 <?php
-// application/controllers/Admin.php
-require_once __DIR__ . '/../models/Product_model.php';
+defined('BASEPATH') OR exit('No direct script access allowed');
 
-session_start();
-
-class Admin {
-    private $productModel;
+class Admin extends CI_Controller {
 
     public function __construct() {
-        $this->productModel = new Product_model();
+        parent::__construct();
+        $this->load->model('Product_model');
+        $this->load->library('session');
+        $this->load->helper('url');
     }
 
-    public function login($username, $password) {
-        // For demo: hardcoded admin, replace with DB lookup and hash in production
-        if ($username === 'admin' && $password === 'admin123') {
-            $_SESSION['admin_logged_in'] = true;
-            return true;
+    public function index() {
+        if (!$this->isAuthenticated()) {
+            redirect('admin/login');
         }
-        return false;
+        
+        $data['products'] = $this->Product_model->getAll();
+        $this->load->view('admin-view/dashboard', $data);
+    }
+
+    public function login() {
+        if ($this->isAuthenticated()) {
+            redirect('admin');
+        }
+
+        if ($this->input->server('REQUEST_METHOD') === 'POST') {
+            $username = $this->input->post('username');
+            $password = $this->input->post('password');
+            
+            if ($this->authenticate($username, $password)) {
+                $this->session->set_userdata('admin_logged_in', true);
+                redirect('admin');
+            } else {
+                $data['error'] = 'Invalid credentials';
+            }
+        }
+        
+        $this->load->view('admin-view/login', isset($data) ? $data : []);
     }
 
     public function logout() {
-        session_destroy();
+        $this->session->sess_destroy();
+        redirect('admin/login');
     }
 
-    public function isAuthenticated() {
-        return isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'];
+    public function product_form($id = null) {
+        if (!$this->isAuthenticated()) {
+            redirect('admin/login');
+        }
+
+        $data['product'] = null;
+        if ($id) {
+            $data['product'] = $this->Product_model->getById($id);
+        }
+
+        if ($this->input->server('REQUEST_METHOD') === 'POST') {
+            $productData = $this->processProductForm();
+            
+            if ($id) {
+                $this->Product_model->update($id, $productData);
+            } else {
+                $this->Product_model->create($productData);
+            }
+            redirect('admin');
+        }
+
+        $this->load->view('admin-view/product_form', $data);
     }
 
-    public function createProduct($data) {
-        if (!$this->isAuthenticated()) return false;
-        return $this->productModel->create($data);
+    public function delete_product($id) {
+        if (!$this->isAuthenticated()) {
+            redirect('admin/login');
+        }
+        
+        $this->Product_model->delete($id);
+        redirect('admin');
     }
 
-    public function getProducts($filter = []) {
-        if (!$this->isAuthenticated()) return [];
-        return $this->productModel->getAll($filter);
+    private function isAuthenticated() {
+        return $this->session->userdata('admin_logged_in') === true;
     }
 
-    public function updateProduct($id, $data) {
-        if (!$this->isAuthenticated()) return false;
-        $this->productModel->update($id, $data);
-        return true;
+    private function authenticate($username, $password) {
+        // For demo: hardcoded admin, replace with DB lookup and hash verification in production
+        return ($username === 'admin' && $password === 'admin123');
     }
 
-    public function deleteProduct($id) {
-        if (!$this->isAuthenticated()) return false;
-        $this->productModel->delete($id);
-        return true;
+    private function processProductForm() {
+        $imagePath = '';
+        
+        if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+            $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
+            $filename = uniqid('prod_', true) . '.' . $ext;
+            $target = FCPATH . 'assets/products/' . $filename;
+            
+            // Create directory if it doesn't exist
+            if (!is_dir(dirname($target))) {
+                mkdir(dirname($target), 0755, true);
+            }
+            
+            if (move_uploaded_file($_FILES['image']['tmp_name'], $target)) {
+                $imagePath = '/assets/products/' . $filename;
+            }
+        } else if ($this->input->post('existing_image')) {
+            $imagePath = $this->input->post('existing_image');
+        }
+
+        return [
+            'name' => $this->input->post('name'),
+            'category' => $this->input->post('category'),
+            'price' => (float)$this->input->post('price'),
+            'description' => $this->input->post('description'),
+            'features' => $this->input->post('features'),
+            'is_featured' => $this->input->post('is_featured') ? 1 : 0,
+            'image' => $imagePath
+        ];
     }
 }
