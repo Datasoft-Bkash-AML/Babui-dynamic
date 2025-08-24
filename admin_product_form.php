@@ -17,13 +17,23 @@ if (isset($_GET['id'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $imagePath = $product['image'] ?? '';
+    if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+        $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
+        $filename = uniqid('prod_', true) . '.' . $ext;
+        $target = __DIR__ . '/assets/products/' . $filename;
+        if (move_uploaded_file($_FILES['image']['tmp_name'], $target)) {
+            $imagePath = '/assets/products/' . $filename;
+        }
+    }
     $data = [
         'name' => $_POST['name'],
         'category' => $_POST['category'],
         'price' => (float)$_POST['price'],
         'description' => $_POST['description'],
         'features' => array_map('trim', explode(',', $_POST['features'])),
-        'is_featured' => !empty($_POST['is_featured'])
+        'is_featured' => !empty($_POST['is_featured']),
+        'image' => $imagePath
     ];
     if (!empty($_POST['id'])) {
         $admin->updateProduct($_POST['id'], $data);
@@ -46,7 +56,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="container mt-5">
     <div class="card shadow p-4 mx-auto" style="max-width: 500px;">
         <h3 class="mb-3 text-center"><?= $product ? 'Edit' : 'Add' ?> Product</h3>
-        <form method="post">
+    <form method="post" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label class="form-label">Product Image</label>
+                <input type="file" class="form-control" name="image" accept="image/*">
+                <?php if (!empty($product['image'])): ?>
+                    <img src="<?= htmlspecialchars($product['image']) ?>" alt="Product Image" class="img-thumbnail mt-2" style="max-width: 150px;">
+                <?php endif; ?>
+            </div>
             <?php if ($product): ?>
                 <input type="hidden" name="id" value="<?= $product['_id'] ?>">
             <?php endif; ?>

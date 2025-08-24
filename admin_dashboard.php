@@ -35,6 +35,7 @@ $products = $admin->getProducts();
     <table class="table table-bordered bg-white shadow-sm">
         <thead>
             <tr>
+                <th>Image</th>
                 <th>Name</th>
                 <th>Category</th>
                 <th>Price</th>
@@ -45,6 +46,11 @@ $products = $admin->getProducts();
         <tbody>
         <?php foreach ($products as $product): ?>
             <tr>
+                <td>
+                    <?php if (!empty($product['image'])): ?>
+                        <img src="<?= htmlspecialchars($product['image']) ?>" alt="Product Image" style="max-width:60px;max-height:60px;object-fit:contain;">
+                    <?php endif; ?>
+                </td>
                 <td><?= htmlspecialchars($product['name']) ?></td>
                 <td><?= htmlspecialchars($product['category']) ?></td>
                 <td><?= htmlspecialchars($product['price']) ?></td>

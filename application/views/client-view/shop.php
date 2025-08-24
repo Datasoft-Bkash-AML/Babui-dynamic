@@ -766,10 +766,47 @@
     <link rel="prefetch" href="/babui/assets/client-view/product-category/speakers/">
 </head>
 
+
 <body data-rsssl="1"
       class="archive post-type-archive post-type-archive-product wp-custom-logo theme-rey woocommerce-shop woocommerce woocommerce-page woocommerce-js ltr elementor-default elementor-kit-2009 rey-cwidth--default --no-acc-focus elementor-opt r-notices rey-js e--ua-blink e--ua-chrome e--ua-webkit"
       data-id="2001" itemtype="https://schema.org/WebPage" itemscope="itemscope" data-rey-device="desktop"
       data-elementor-device-mode="desktop" data-active-filters="0" data-at-top="">
+
+    <!-- Dynamic Product List -->
+    <div class="container mt-5">
+        <h2>Shop Products</h2>
+        <div class="row">
+            <?php if (isset($products) && count($products) > 0): ?>
+                <?php foreach ($products as $product): ?>
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100">
+                            <?php if (!empty($product['image'])): ?>
+                                <img src="<?= htmlspecialchars($product['image']) ?>" class="card-img-top" alt="Product Image" style="max-height:200px;object-fit:contain;">
+                            <?php endif; ?>
+                            <div class="card-body">
+                                <h5 class="card-title"><?= htmlspecialchars($product['name'] ?? '') ?></h5>
+                                <h6 class="card-subtitle mb-2 text-muted">Category: <?= htmlspecialchars($product['category'] ?? '') ?></h6>
+                                <p class="card-text">Price: $<?= htmlspecialchars($product['price'] ?? '') ?></p>
+                                <p class="card-text">Description: <?= htmlspecialchars($product['description'] ?? '') ?></p>
+                                <?php if (!empty($product['features'])): ?>
+                                    <ul>
+                                        <?php foreach ((array)$product['features'] as $feature): ?>
+                                            <li><?= htmlspecialchars($feature) ?></li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                <?php endif; ?>
+                                <?php if (!empty($product['is_featured'])): ?>
+                                    <span class="badge bg-success">Featured</span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <p>No products found.</p>
+            <?php endif; ?>
+        </div>
+    </div>
 
 <script type="text/javascript" id="rey-no-js" data-noptimize="" data-no-optimize="1" data-no-defer="1">
     document.body.classList.remove('rey-no-js');
