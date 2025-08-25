@@ -2,6 +2,10 @@
 // admin_login.php
 require_once __DIR__ . '/application/controllers/Admin.php';
 
+// Redirect to the proper route
+header('Location: /admin/login');
+exit;
+
 session_start();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

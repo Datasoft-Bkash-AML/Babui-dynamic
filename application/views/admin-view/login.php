@@ -10,7 +10,7 @@
 <div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
     <div class="card shadow p-4" style="width: 350px;">
         <h3 class="mb-3 text-center">Admin Login</h3>
-        <form method="post" action="/admin_login.php">
+        <form method="post" action="/admin/login">
             <div class="mb-3">
                 <label for="username" class="form-label">Username</label>
                 <input type="text" class="form-control" id="username" name="username" required>

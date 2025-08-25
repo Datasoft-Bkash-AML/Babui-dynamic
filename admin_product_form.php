@@ -5,15 +5,16 @@ require_once __DIR__ . '/application/controllers/Admin.php';
 session_start();
 $admin = new Admin();
 if (!$admin->isAuthenticated()) {
-    header('Location: /admin_login.php');
+    header('Location: /admin/login');
     exit;
 }
 
 // Edit mode
 $product = null;
 if (isset($_GET['id'])) {
-    $product = $admin->getProducts(['_id' => new MongoDB\BSON\ObjectId($_GET['id'])]);
-    $product = $product ? $product[0] : null;
+    // The product model now returns MySQL rows where primary key is `id`.
+    $products = $admin->getProducts(['id' => $_GET['id']]);
+    $product = !empty($products) ? $products[0] : null;
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -65,7 +66,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <?php endif; ?>
             </div>
             <?php if ($product): ?>
-                <input type="hidden" name="id" value="<?= $product['_id'] ?>">
+                <?php $prod_id = isset($product['id']) ? $product['id'] : (isset($product['_id']) ? $product['_id'] : ''); ?>
+                <input type="hidden" name="id" value="<?= htmlspecialchars($prod_id) ?>">
             <?php endif; ?>
             <div class="mb-3">
                 <label class="form-label">Name</label>

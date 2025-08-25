@@ -1,35 +1,40 @@
 <?php
 // application/models/Product_model.php
-require_once __DIR__ . '/../libraries/Mongo_db.php';
 
-class Product_model {
-    private $collection;
+defined('BASEPATH') OR exit('No direct script access allowed');
 
+class Product_model extends CI_Model {
     public function __construct() {
-        $mongo = new Mongo_db();
-        $this->collection = $mongo->getCollection('products');
+        parent::__construct();
+        $this->load->database();
     }
 
     public function create($data) {
-        $result = $this->collection->insertOne($data);
-        return $result->getInsertedId();
+        $this->db->insert('products', $data);
+        return $this->db->insert_id();
     }
 
     public function getAll($filter = []) {
-        return $this->collection->find($filter)->toArray();
+        if (!empty($filter)) {
+            $this->db->where($filter);
+        }
+        $query = $this->db->get('products');
+        return $query->result_array();
     }
 
     public function getById($id) {
-        return $this->collection->findOne(['_id' => new MongoDB\BSON\ObjectId($id)]);
+        $this->db->where('id', $id);
+        $query = $this->db->get('products');
+        return $query->row_array();
     }
 
     public function update($id, $data) {
-        $this->collection->updateOne([
-            '_id' => new MongoDB\BSON\ObjectId($id)
-        ], ['$set' => $data]);
+        $this->db->where('id', $id);
+        $this->db->update('products', $data);
     }
 
     public function delete($id) {
-        $this->collection->deleteOne(['_id' => new MongoDB\BSON\ObjectId($id)]);
+        $this->db->where('id', $id);
+        $this->db->delete('products');
     }
 }

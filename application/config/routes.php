@@ -53,3 +53,9 @@ $route['default_controller'] = 'welcome';
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
 $route['shop'] = 'shop';
+$route['admin/login'] = 'admin/showLogin';
+$route['admin/dashboard'] = 'admin/dashboard';
+$route['test-auth'] = 'admin/testAuth';
+// Admin product management
+$route['admin/product_form'] = 'admin/product_form';
+$route['admin/delete_product'] = 'admin/delete_product';
